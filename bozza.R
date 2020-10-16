@@ -19,7 +19,7 @@ mle_zeta <- mle(minus_log_likelihood_zeta, start = list(gamma = 2),
 
 summary(mle_zeta)
 attributes(summary(mle_zeta))
-attributes(summary(mle_zeta))$coef[1]
+gamma <- attributes(summary(mle_zeta))$coef[1]
 
 attributes(summary(mle_zeta))$m2logL
 
@@ -28,7 +28,7 @@ get_AIC <- function(m2logL,K,N) {
   m2logL + 2*K*N/(N-K-1) # AIC with a correction for sample size
 }
 
-get_AIC(attributes(summary(mle_zeta))$m2logL, 1, N)
+AIC <- get_AIC(attributes(summary(mle_zeta))$m2logL, 1, N)
 
 
 
