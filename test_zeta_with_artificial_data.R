@@ -2,9 +2,10 @@
 require("stats4") # for MLE
 require("VGAM") # for the Riemann-zeta function
 
-degree_sequence = read.table("./data/English_out-degree_sequence.txt", header = FALSE)
+degree_sequence = read.table("./samples_from_discrete_distributions/data/sample_of_zeta_with_parameter_1.5.txt",
+                             header = FALSE)
 degree_spectrum = table(degree_sequence)
-print(degree_spectrum)
+# print(degree_spectrum)
 
 N <- dim(degree_sequence)[1]
 
@@ -20,6 +21,7 @@ mle_zeta <- mle(minus_log_likelihood_zeta, start = list(gamma = 2),
 summary(mle_zeta)
 attributes(summary(mle_zeta))
 res <- attributes(summary(mle_zeta))$coef[1]
+cat("gamma: ", res)
 
 # initial value for the parameters
 # q0 = N/M
