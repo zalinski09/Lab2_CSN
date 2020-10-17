@@ -19,7 +19,7 @@ write_summary <- function(language,file) {
 }
 
 degree_sequence <- data.frame("Language" = character(), "N" = integer(), "Max_degree" = double(),
-                              "Mean_degree (M / N)" = double(), "Inverse_mean_degree (N / M)" = double())
+                              "Mean_degree (M / N)" = double(), "Inverse_mean_degree (N / M)" = double(), check.names = FALSE)
 
 source = read.table("list_out.txt", header = TRUE, as.is = c("language","file"))
 
