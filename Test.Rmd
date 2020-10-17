@@ -1,0 +1,32 @@
+---
+title: "Properties of the degree sequences"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r degree sequences, echo=FALSE}
+
+write_summary <- function(language,file) {
+  degree_sequence = read.table(file, header = FALSE)
+  return (c(language, length(degree_sequence$V1), max(degree_sequence$V1), sum(degree_sequence$V1)/length(degree_sequence$V1),
+            length(degree_sequence$V1)/sum(degree_sequence$V1)))
+}
+
+degree_sequence <- data.frame("Language" = character(), "N" = integer(), "Max_degree" = double(),
+                              "Mean_degree (M / N)" = double(), "Inverse_mean_degree (N / M)" = double())
+
+source = read.table("list_out.txt", header = TRUE, as.is = c("language","file"))
+
+for (x in 1:nrow(source)) {
+  degree_sequence[x,] <- write_summary(source$language[x], source$file[x])
+}
+
+degree_sequence
+```
+

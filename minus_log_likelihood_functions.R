@@ -55,8 +55,13 @@ mle_zeta <- mle(minus_log_likelihood_zeta, start = list(gamma = 2),
 #
 # 5 - Right-truncated zeta
 #
+rtrunc_zeta <-function(gamma, kmax) {
+  x <- c(1:kmax)
+  sum(x ^ - gamma)
+}
+
 minus_log_likelihood_right_truncated_zeta <- function(gamma, kmax) {
-  N * log( H(kmax, gamma) ) + gamma * sum(log(x)) # H does not exist, substitute with right-truncated zeta
+  N * log( rtrunc_zeta(kmax, gamma) ) + gamma * sum(log(x))
 }
 
 mle_right_truncated_zeta <- mle(minus_log_likelihood_right_truncated_zeta, start = list(gamma = 2, kmax = N),
