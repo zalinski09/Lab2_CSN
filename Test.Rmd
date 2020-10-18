@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-```{r degree sequences, echo=FALSE}
+```{r degree sequences, echo=TRUE}
 
 write_summary <- function(language,file) {
   degree_sequence = read.table(file, header = FALSE)
@@ -18,8 +18,8 @@ write_summary <- function(language,file) {
             length(degree_sequence$V1)/sum(degree_sequence$V1)))
 }
 
-degree_sequence <- data.frame("Language" = character(), "N" = integer(), "Max_degree" = double(),
-                              "Mean_degree (M / N)" = double(), "Inverse_mean_degree (N / M)" = double(), check.names = FALSE)
+degree_sequence <- data.frame("Language" = character(), "N" = integer(), "Max degree" = double(),
+                              "Mean degree (M/N)" = double(), "Inverse mean degree (N/M)" = double(), check.names = FALSE)
 
 source = read.table("list_out.txt", header = TRUE, as.is = c("language","file"))
 
