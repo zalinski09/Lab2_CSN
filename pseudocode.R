@@ -1,6 +1,9 @@
 # pseudocode of the final script (Lab2_CSN)
 # _____________________________________________________________________________
 #
+# Notice that the aim of this pseudocode is to be a general guideline for
+# writing the script, but it is not intended to be a perfect match with the
+# structure of the code. 
 #
 #
 # 1) for each out-degree dataset (English,...):
