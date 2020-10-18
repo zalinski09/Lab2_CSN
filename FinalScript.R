@@ -1,12 +1,16 @@
 # Final script for lab 2
 
+require("stats4") # for MLE
+require("VGAM") # for the Riemann-zeta function
+
 #
-# ausiliary functions
+# auxiliary functions
 #
 write_summary <- function(language,file) {
   degree_sequence = read.table(file, header = FALSE)
-  return (c(language, length(degree_sequence$V1), max(degree_sequence$V1), sum(degree_sequence$V1)/length(degree_sequence$V1),
-            length(degree_sequence$V1)/sum(degree_sequence$V1)))
+  return (list(language, length(degree_sequence$V1), max(degree_sequence$V1),
+            sum(degree_sequence$V1) / length(degree_sequence$V1),
+            length(degree_sequence$V1) / sum(degree_sequence$V1)))
 }
 
 # 1 - Poisson
@@ -50,10 +54,10 @@ get_AIC <- function(m2logL,K,N) {
 #
 
 properties <- data.frame("language" = character(), "N" = integer(),
-                              "max_degree" = double(),
-                              "Mean degree (M/N)" = double(),
-                              "Inverse mean degree (N/M)" = double(),
-                              check.names = FALSE)
+                         "max_degree" = integer(),
+                         "Mean degree (M/N)" = double(),
+                         "Inverse mean degree (N/M)" = double(),
+                         check.names = FALSE)
 
 source = read.table("list_out.txt", header = TRUE, as.is = c("language","file"))
 
@@ -72,13 +76,13 @@ for (x in 1:nrow(source)) {
 
 mle_params <- data.frame("language" = character(), "lambda" = double(),
                          "q" = double(), "gamma1" = double(),
-                         "gamma2" = double(), "kmax" = double(),
+                         "gamma2" = double(), "kmax" = integer(),
                          check.names = FALSE)
 
 AIC <- data.frame("language" = character(), "AIC_poisson" = double(),
                   "AIC_geometric" = double(), "AIC_zeta_2" = double(),
                   "AIC_zeta" = double(), "AIC_trunc_zeta" = double(),
-                  "AIC_best" = double())
+                  "AIC_best" = double(), check.names = FALSE)
 
 
 
@@ -110,18 +114,19 @@ for (i in 1:nrow(source)) {
   # 5: truncated-zeta
   mle_trunc_zeta <- mle(minus_log_likelihood_rtrunc_zeta,
                         start = list(gamma = 2, kmax = properties$max_degree[i]),
-                        method = "L-BFGS-B", lower = c(1.0000001, 1),
-                        upper = c(7 * attributes(summary(mle_zeta))$coef[1],
-                                  properties$max_degree[i]))
+                        method = "L-BFGS-B",
+                        lower = c(1.0000001, properties$max_degree[i])
+                        )
   
   
-  mle_params[i,] <- (c(lang, attributes(summary(mle_poisson))$coef[1],
-                       attributes(summary(mle_geometric))$coef[1],
-                       attributes(summary(mle_zeta))$coef[1],
-                       attributes(summary(mle_trunc_zeta))$coef[1],
-                       attributes(summary(mle_trunc_zeta))$coef[2]))
   
-  AIC[i,] <- c(lang, get_AIC(attributes(summary(mle_poisson))$m2logL, 1, N),
+  mle_params[i,] <- list(lang, attributes(summary(mle_poisson))$coef[1],
+                      attributes(summary(mle_geometric))$coef[1],
+                      attributes(summary(mle_zeta))$coef[1],
+                      attributes(summary(mle_trunc_zeta))$coef[1],
+                      attributes(summary(mle_trunc_zeta))$coef[2])
+  
+  AIC[i,] <- list(lang, get_AIC(attributes(summary(mle_poisson))$m2logL, 1, N),
                get_AIC(attributes(summary(mle_geometric))$m2logL, 1, N),
                2 * (N * log((pi^2)/6) + 2 * Mp),
                get_AIC(attributes(summary(mle_zeta))$m2logL, 1, N),
@@ -132,10 +137,7 @@ for (i in 1:nrow(source)) {
                          AIC$AIC_zeta_2[i],
                          AIC$AIC_zeta[i],
                          AIC$AIC_trunc_zeta[i])
-  
 }
-
-
 
 
 
@@ -143,4 +145,20 @@ for (i in 1:nrow(source)) {
 #       compute DELTA = AIC - AICbest
 # 6) produce a summary table as Table [4]
 #
+
+DELTA <- data.frame("language" = character(), "Model 1" = double(),
+                    "Model 2" = double(), "Model 3" = double(),
+                    "Model 4" = double(), "Model 5" = double(),
+                    check.names = FALSE)
+
+for (i in 1:nrow(source)) {
+  DELTA[i,] <- list(source$language[i],
+                 as.double(AIC$AIC_poisson[i] - AIC$AIC_best[i]),
+                 as.double(AIC$AIC_geometric[i] - AIC$AIC_best[i]),
+                 as.double(AIC$AIC_zeta_2[i] - AIC$AIC_best[i]),
+                 as.double(AIC$AIC_zeta[i] - AIC$AIC_best[i]),
+                 as.double(AIC$AIC_trunc_zeta[i] - AIC$AIC_best[i]))
+}
+
+
 # 7) evaluate the data with a new probability distribution (e.g. Altmann function)

@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 write_summary <- function(language,file) {
   degree_sequence = read.table(file, header = FALSE)
-  return (c(language, length(degree_sequence$V1), max(degree_sequence$V1), sum(degree_sequence$V1)/length(degree_sequence$V1),
+  return (list(language, length(degree_sequence$V1), max(degree_sequence$V1), sum(degree_sequence$V1)/length(degree_sequence$V1),
             length(degree_sequence$V1)/sum(degree_sequence$V1)))
 }
 
