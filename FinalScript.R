@@ -18,7 +18,7 @@ for (x in 1:nrow(source)) {
 
 # 3) for each distribution (from 1 to 5):
 #       estimate the free parameter(s) (except for model 3, the zeta(2))
-#       produce a summary table as Table [2]
+#       produce a summary table as Table [3]
 #       compute AIC = -2L + 2K * (N / N-K-1), where L is the log-likelihood
 N <- dim(degree_sequence)[1]
 x <- degree_sequence$V1
