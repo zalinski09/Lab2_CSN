@@ -38,6 +38,16 @@ minus_log_likelihood_rtrunc_zeta <- function(gamma, kmax) {
   N * log( rtrunc_zeta(gamma, kmax) ) + gamma * Mp
 }
 
+# Altmann
+c_const <- function(gamma, delta) {
+  j <- c(1:N)
+  1 / sum(j ^ -gamma * exp(-delta * j))
+}
+
+minus_log_likelihood_altmann <- function(gamma, delta) {
+  gamma * Mp + delta * M - N * log(c_const(gamma, delta))
+}
+
 get_AIC <- function(m2logL,K,N) {
   m2logL + 2*K*N/(N-K-1) 
 }
@@ -61,8 +71,8 @@ properties <- data.frame("language" = character(), "N" = integer(),
 
 source = read.table("list_out.txt", header = TRUE, as.is = c("language","file"))
 
-for (x in 1:nrow(source)) {
-  properties[x,] <- write_summary(source$language[x], source$file[x])
+for (i in 1:nrow(source)) {
+  properties[i,] <- write_summary(source$language[i], source$file[i])
 }
 
 
@@ -153,12 +163,73 @@ DELTA <- data.frame("language" = character(), "Model 1" = double(),
 
 for (i in 1:nrow(source)) {
   DELTA[i,] <- list(source$language[i],
-                 as.double(AIC$AIC_poisson[i] - AIC$AIC_best[i]),
-                 as.double(AIC$AIC_geometric[i] - AIC$AIC_best[i]),
-                 as.double(AIC$AIC_zeta_2[i] - AIC$AIC_best[i]),
-                 as.double(AIC$AIC_zeta[i] - AIC$AIC_best[i]),
-                 as.double(AIC$AIC_trunc_zeta[i] - AIC$AIC_best[i]))
+                 AIC$AIC_poisson[i] - AIC$AIC_best[i],
+                 AIC$AIC_geometric[i] - AIC$AIC_best[i],
+                 AIC$AIC_zeta_2[i] - AIC$AIC_best[i],
+                 AIC$AIC_zeta[i] - AIC$AIC_best[i],
+                 AIC$AIC_trunc_zeta[i] - AIC$AIC_best[i])
 }
 
 
+
 # 7) evaluate the data with a new probability distribution (e.g. Altmann function)
+#
+
+altmann_params <- data.frame("language" = character(),
+                             "gamma" = double(),
+                             "delta" = double(),
+                             "AIC" = double(),
+                             check.names = FALSE)
+
+AIC_new <- data.frame("language" = character(), "AIC_poisson" = double(),
+                      "AIC_geometric" = double(), "AIC_zeta_2" = double(),
+                      "AIC_zeta" = double(), "AIC_trunc_zeta" = double(),
+                      "AIC_altmann" = double(), "AIC_best" = double(),
+                      check.names = FALSE)
+
+
+for (i in 1:nrow(source)) {
+  degree_sequence <- read.table(source$file[i], header = FALSE)
+  lang <- source$language[i]
+  x <- degree_sequence$V1
+  
+  N <- dim(degree_sequence)[1]
+  M <- sum(x)
+  Mp <- sum(log(x))
+  
+  
+  mle_altmann <- mle(minus_log_likelihood_altmann, start = list(gamma = 2, delta = 1),
+                     method = "L-BFGS-B", lower = c(1.0000001, 0.0000001))
+  
+  altmann_params[i,] <- list(lang, attributes(summary(mle_altmann))$coef[1],
+                             attributes(summary(mle_altmann))$coef[2],
+                             get_AIC(attributes(summary(mle_altmann))$m2logL, 2, N))
+  
+  AIC_new[i,] <- list(lang, AIC$AIC_poisson[i], AIC$AIC_geometric[i],
+                      AIC$AIC_zeta_2[i], AIC$AIC_zeta[i], AIC$AIC_trunc_zeta[i],
+                      get_AIC(attributes(summary(mle_altmann))$m2logL, 2, N), 0)
+  
+  AIC_new$AIC_best[i] <- min(AIC_new$AIC_poisson[i],
+                         AIC_new$AIC_geometric[i],
+                         AIC_new$AIC_zeta_2[i],
+                         AIC_new$AIC_zeta[i],
+                         AIC_new$AIC_trunc_zeta[i],
+                         AIC_new$AIC_altmann[i])
+}
+
+DELTA_new <- data.frame("language" = character(), "Model 1" = double(),
+                    "Model 2" = double(), "Model 3" = double(),
+                    "Model 4" = double(), "Model 5" = double(),
+                    "Model 6" = double(), check.names = FALSE)
+
+for (i in 1:nrow(source)) {
+  DELTA_new[i,] <- list(source$language[i],
+                        AIC_new$AIC_poisson[i] - AIC_new$AIC_best[i],
+                        AIC_new$AIC_geometric[i] - AIC_new$AIC_best[i],
+                        AIC_new$AIC_zeta_2[i] - AIC_new$AIC_best[i],
+                        AIC_new$AIC_zeta[i] - AIC_new$AIC_best[i],
+                        AIC_new$AIC_trunc_zeta[i] - AIC_new$AIC_best[i],
+                        AIC_new$AIC_altmann[i] - AIC_new$AIC_best[i])
+}
+
+
